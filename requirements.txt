@@ -1,0 +1,6 @@
+streamlit
+jax[cpu]
+flax
+numpy
+plotly
+scipy
