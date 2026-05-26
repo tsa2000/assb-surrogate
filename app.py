@@ -235,12 +235,12 @@ def run_forward(P, C_rate, tau, n_mc=50):
 
 # ── Heatmap builder ────────────────────────────────────────────────────────────
 # ── Heatmap builder ────────────────────────────────────────────────────────────
+# ── Heatmap builder ────────────────────────────────────────────────────────────
 def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
                  vmin=None, vmax=None):
     bx = x_mesh[:, 0]
     by = x_mesh[:, 1]
 
-    # ── تحديد العناصر داخل الجسيمات ──────────────────────────────────────────
     particles_info = [
         {"cx": 0.28, "cy": 0.28, "R": 6.0e-6/40e-6},
         {"cx": 0.72, "cy": 0.20, "R": 8.0e-6/40e-6},
@@ -248,33 +248,49 @@ def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
         {"cx": 0.28, "cy": 0.75, "R": 7.2e-6/40e-6},
         {"cx": 0.55, "cy": 0.48, "R": 4.0e-6/40e-6},
     ]
-    in_particle = np.zeros(len(bx), dtype=bool)
+
+    # Grid ناعم 200×200
+    xi = np.linspace(0, 1, 200)
+    yi = np.linspace(0, 1, 200)
+    XX, YY = np.meshgrid(xi, yi)
+
+    # mask: داخل أي جسيمة؟
+    in_particle_grid = np.zeros(XX.shape, dtype=bool)
+    for p in particles_info:
+        r = np.sqrt((XX - p['cx'])**2 + (YY - p['cy'])**2)
+        in_particle_grid |= (r < p['R'])
+
+    # interpolation على نقاط الجسيمات فقط
+    in_particle_pts = np.zeros(len(bx), dtype=bool)
     for p in particles_info:
         r = np.sqrt((bx - p['cx'])**2 + (by - p['cy'])**2)
-        in_particle |= (r < p['R'])
+        in_particle_pts |= (r < p['R'])
 
-    # خارج الجسيمات → قيمة LPSC منخفضة (أزرق)
+    # interpolate القيم داخل الجسيمات
+    ZZ = np.full(XX.shape, np.nan)
+    if in_particle_pts.sum() > 3:
+        ZZ_interp = griddata(
+            (bx[in_particle_pts], by[in_particle_pts]),
+            values[in_particle_pts],
+            (XX, YY), method="linear"
+        )
+        ZZ[in_particle_grid] = ZZ_interp[in_particle_grid]
+
+    # خارج الجسيمات → قيمة LPSC (أزرق)
     lpsc_val = vmin if vmin is not None else float(np.percentile(values, 5))
-    values_display = np.where(in_particle, values, lpsc_val)
+    ZZ[~in_particle_grid] = lpsc_val
 
     fig = go.Figure()
 
-    # Scatter plot
-    fig.add_trace(go.Scatter(
-        x=bx, y=by,
-        mode="markers",
-        name="",
-        marker=dict(
-            size=3,
-            color=values_display,
-            colorscale=colorscale,
-            cmin=vmin, cmax=vmax,
-            colorbar=dict(
-                title=dict(text=unit, font=dict(size=11)),
-                thickness=12),
-            showscale=True,
-        ),
-        hovertemplate=f"{unit}: %{{marker.color:.4f}}<extra></extra>",
+    # Heatmap ناعم
+    fig.add_trace(go.Heatmap(
+        x=xi, y=yi, z=ZZ,
+        colorscale=colorscale,
+        zmin=vmin, zmax=vmax,
+        colorbar=dict(
+            title=dict(text=unit, font=dict(size=11)),
+            thickness=12),
+        showscale=True,
     ))
 
     # حدود الجسيمات
@@ -291,14 +307,16 @@ def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
 
     fig.update_layout(
         title=dict(text=title, font=dict(size=13), x=0.5),
-        xaxis=dict(showticklabels=False, showgrid=False, scaleanchor="y"),
-        yaxis=dict(showticklabels=False, showgrid=False),
+        xaxis=dict(showticklabels=False, showgrid=False),
+        yaxis=dict(showticklabels=False, showgrid=False,
+                   scaleanchor="x"),
         margin=dict(l=0, r=0, t=36, b=0),
         height=260,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )
     return fig
+
                      
 # ── V-cap curve ────────────────────────────────────────────────────────────────
 def make_vcap_curve(tau_val, V_mean, V_std, cap_mean, cap_std):
