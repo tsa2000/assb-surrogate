@@ -234,19 +234,39 @@ def run_forward(P, C_rate, tau, n_mc=50):
     }
 
 # ── Heatmap builder ────────────────────────────────────────────────────────────
+# ── Heatmap builder ────────────────────────────────────────────────────────────
 def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
                  vmin=None, vmax=None):
     bx = x_mesh[:, 0]
     by = x_mesh[:, 1]
+
+    # ── تحديد العناصر داخل الجسيمات ──────────────────────────────────────────
+    particles_info = [
+        {"cx": 0.28, "cy": 0.28, "R": 6.0e-6/40e-6},
+        {"cx": 0.72, "cy": 0.20, "R": 8.0e-6/40e-6},
+        {"cx": 0.80, "cy": 0.70, "R": 6.8e-6/40e-6},
+        {"cx": 0.28, "cy": 0.75, "R": 7.2e-6/40e-6},
+        {"cx": 0.55, "cy": 0.48, "R": 4.0e-6/40e-6},
+    ]
+    in_particle = np.zeros(len(bx), dtype=bool)
+    for p in particles_info:
+        r = np.sqrt((bx - p['cx'])**2 + (by - p['cy'])**2)
+        in_particle |= (r < p['R'])
+
+    # خارج الجسيمات → قيمة LPSC منخفضة (أزرق)
+    lpsc_val = vmin if vmin is not None else float(np.percentile(values, 5))
+    values_display = np.where(in_particle, values, lpsc_val)
+
     fig = go.Figure()
 
-    # Scatter plot للـ field values
+    # Scatter plot
     fig.add_trace(go.Scatter(
         x=bx, y=by,
         mode="markers",
+        name="",
         marker=dict(
             size=3,
-            color=values,
+            color=values_display,
             colorscale=colorscale,
             cmin=vmin, cmax=vmax,
             colorbar=dict(
@@ -257,14 +277,7 @@ def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
         hovertemplate=f"{unit}: %{{marker.color:.4f}}<extra></extra>",
     ))
 
-    # Particle boundaries overlay
-    particles_info = [
-        {"cx": 0.28, "cy": 0.28, "R": 6.0e-6/40e-6},
-        {"cx": 0.72, "cy": 0.20, "R": 8.0e-6/40e-6},
-        {"cx": 0.80, "cy": 0.70, "R": 6.8e-6/40e-6},
-        {"cx": 0.28, "cy": 0.75, "R": 7.2e-6/40e-6},
-        {"cx": 0.55, "cy": 0.48, "R": 4.0e-6/40e-6},
-    ]
+    # حدود الجسيمات
     theta = np.linspace(0, 2*np.pi, 60)
     for p in particles_info:
         fig.add_trace(go.Scatter(
