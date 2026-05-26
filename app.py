@@ -252,8 +252,9 @@ def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
         x=xi, y=yi, z=ZZ,
         colorscale=colorscale,
         zmin=vmin, zmax=vmax,
-        colorbar=dict(title=unit, thickness=12,
-                      titlefont=dict(size=11)),
+        colorbar=dict(
+             title=dict(text=unit, font=dict(size=11)),
+             thickness=12),
         showscale=True,
     ))
 
