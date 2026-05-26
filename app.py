@@ -233,55 +233,38 @@ def run_forward(P, C_rate, tau, n_mc=50):
         "cap_mean": cap_mean, "cap_std": cap_std,
     }
 
-# ── Heatmap builder (COMSOL-style: interpolated + contour lines) ───────────────
+# ── Heatmap builder ────────────────────────────────────────────────────────────
 def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
                  vmin=None, vmax=None):
     bx = x_mesh[:, 0]
     by = x_mesh[:, 1]
-
-    # Smooth interpolation grid
-    xi = np.linspace(bx.min(), bx.max(), 200)
-    yi = np.linspace(by.min(), by.max(), 200)
-    XX, YY = np.meshgrid(xi, yi)
-    ZZ = griddata((bx, by), values, (XX, YY), method="cubic")
-
     fig = go.Figure()
-
-    # Background heatmap
-    fig.add_trace(go.Heatmap(
-        x=xi, y=yi, z=ZZ,
-        colorscale=colorscale,
-        zmin=vmin, zmax=vmax,
-        colorbar=dict(
-             title=dict(text=unit, font=dict(size=11)),
-             thickness=12),
-        showscale=True,
+    fig.add_trace(go.Scatter(
+        x=bx, y=by,
+        mode="markers",
+        marker=dict(
+            size=3,
+            color=values,
+            colorscale=colorscale,
+            cmin=vmin, cmax=vmax,
+            colorbar=dict(
+                title=dict(text=unit, font=dict(size=11)),
+                thickness=12),
+            showscale=True,
+        ),
+        hovertemplate=f"{unit}: %{{marker.color:.4f}}<extra></extra>",
     ))
-
-    # Contour lines on top (COMSOL style)
-    fig.add_trace(go.Contour(
-        x=xi, y=yi, z=ZZ,
-        showscale=False,
-        contours=dict(coloring="none", showlines=True,
-                      start=vmin if vmin else ZZ[~np.isnan(ZZ)].min(),
-                      end=vmax if vmax else ZZ[~np.isnan(ZZ)].max(),
-                      size=(((vmax or ZZ[~np.isnan(ZZ)].max()) -
-                             (vmin or ZZ[~np.isnan(ZZ)].min())) / 8)),
-        line=dict(color="white", width=0.6),
-    ))
-
     fig.update_layout(
         title=dict(text=title, font=dict(size=13), x=0.5),
-        xaxis=dict(showticklabels=False, showgrid=False),
-        yaxis=dict(showticklabels=False, showgrid=False,
-                   scaleanchor="x"),
+        xaxis=dict(showticklabels=False, showgrid=False, scaleanchor="y"),
+        yaxis=dict(showticklabels=False, showgrid=False),
         margin=dict(l=0, r=0, t=36, b=0),
         height=260,
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
     )
     return fig
-
+                     
 # ── V-cap curve ────────────────────────────────────────────────────────────────
 def make_vcap_curve(tau_val, V_mean, V_std, cap_mean, cap_std):
     tau_vals = np.linspace(0.05, tau_val, 12)
