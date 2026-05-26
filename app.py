@@ -534,10 +534,10 @@ else:
     with col_inv:
         st.markdown("#### 🎯 Constraints")
         xi_limit  = st.slider("Max damage ξ_max ≤",
-                              0.05, 0.95, 0.50, 0.05,
+                              0.05, 0.95, 0.70, 0.05,
                               format="%.2f")
         cap_limit = st.slider("Min capacity cap ≥ (mAh/g)",
-                              10.0, 240.0, 80.0, 5.0)
+                              10.0, 240.0, 50.0, 5.0)
 
         st.markdown("---")
         run_inv = st.button("🔍 Find Optimal Conditions",
