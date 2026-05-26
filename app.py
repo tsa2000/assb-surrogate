@@ -232,7 +232,24 @@ def run_forward(P, C_rate, tau, n_mc=50):
         "V_mean": V_mean, "V_std": V_std,
         "cap_mean": cap_mean, "cap_std": cap_std,
     }
-
+# ── Particle boundaries overlay ───────────────────────────────────────────────
+particles_info = [
+    {"cx": 0.28, "cy": 0.28, "R": 6.0e-6/40e-6},
+    {"cx": 0.72, "cy": 0.20, "R": 8.0e-6/40e-6},
+    {"cx": 0.80, "cy": 0.70, "R": 6.8e-6/40e-6},
+    {"cx": 0.28, "cy": 0.75, "R": 7.2e-6/40e-6},
+    {"cx": 0.55, "cy": 0.48, "R": 4.0e-6/40e-6},
+]
+theta = np.linspace(0, 2*np.pi, 60)
+for p in particles_info:
+    fig.add_trace(go.Scatter(
+        x=p["cx"] + p["R"]*np.cos(theta),
+        y=p["cy"] + p["R"]*np.sin(theta),
+        mode="lines",
+        line=dict(color="white", width=2),
+        showlegend=False,
+        hoverinfo="skip",
+    ))
 # ── Heatmap builder ────────────────────────────────────────────────────────────
 def make_heatmap(values, x_mesh, title, unit, colorscale="Jet",
                  vmin=None, vmax=None):
