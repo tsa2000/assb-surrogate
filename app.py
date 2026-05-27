@@ -347,24 +347,7 @@ with col_out:
     else:
         res = st.session_state.results
 
-        # ── Traffic light ──────────────────────────────────────────────────
-        xi_max_val = float(res["xi_mean"].max())
-        if xi_max_val < 0.3:
-            danger_html = '<span class="danger-green">🟢 Safe</span>'
-            danger_msg  = "Damage level acceptable"
-        elif xi_max_val < 0.6:
-            danger_html = '<span class="danger-yellow">🟡 Warning</span>'
-            danger_msg  = "Moderate damage — monitor"
-        else:
-            danger_html = '<span class="danger-red">🔴 Danger</span>'
-            danger_msg  = "High damage — reduce C-rate or increase P"
-
-        st.markdown(
-            f'<div style="text-align:center;padding:8px;background:#16213e;'
-            f'border-radius:8px;margin-bottom:12px">'
-            f'{danger_html} &nbsp; <span style="color:#aaa;font-size:13px">'
-            f'{danger_msg}</span></div>', unsafe_allow_html=True)
-
+        
         # ── Scalar metrics ─────────────────────────────────────────────────
         m1, m2, m3, m4 = st.columns(4)
         for col_m, val, std, label in zip(
