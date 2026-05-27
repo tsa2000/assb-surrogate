@@ -359,12 +359,7 @@ with col_out:
             danger_html = '<span class="danger-red">🔴 Danger</span>'
             danger_msg  = "High damage — reduce C-rate or increase P"
 
-        st.markdown(
-            f'<div style="text-align:center;padding:8px;background:#16213e;'
-            f'border-radius:8px;margin-bottom:12px">'
-            f'{danger_html} &nbsp; <span style="color:#aaa;font-size:13px">'
-            f'{danger_msg}</span></div>', unsafe_allow_html=True)
-            
+        
         # ── Scalar metrics ─────────────────────────────────────────────────
         m1, m2, m3, m4 = st.columns(4)
         for col_m, val, std, label in zip(
