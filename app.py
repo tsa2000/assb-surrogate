@@ -347,7 +347,6 @@ with col_out:
     else:
         res = st.session_state.results
 
-        
         # ── Scalar metrics ─────────────────────────────────────────────────
         m1, m2, m3, m4 = st.columns(4)
         for col_m, val, std, label in zip(
