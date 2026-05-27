@@ -310,13 +310,6 @@ st.markdown(
     '<span class="r2-badge">DON: cap R²=0.9998</span>'
     '</div>', unsafe_allow_html=True)
 
-st.markdown(
-    '<div style="text-align:center;margin-bottom:12px">'
-    '<span class="badge-choice">[CHOICE: 5 circular particles, NOT paper SEM]</span>'
-    '<span class="badge-choice">[CHOICE: galvanostatic, NOT full Butler-Volmer]</span>'
-    '<span class="badge-choice">[CHOICE: ROM phase-field]</span>'
-    '</div>', unsafe_allow_html=True)
-
 st.markdown("---")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -532,84 +525,6 @@ with tab3:
             margin=dict(l=40,r=10,t=40,b=36))
         fig_p.update_xaxes(title_text="P (MPa)")
         st.plotly_chart(fig_p, use_container_width=True)
-
-# ══════════════════════════════════════════════════════════════════════════════
-# MODEL INFO + LIMITATIONS
-# ══════════════════════════════════════════════════════════════════════════════
-st.markdown("---")
-
-col_info, col_lim = st.columns(2)
-
-with col_info:
-    with st.expander("ℹ️ Model Information", expanded=False):
-        st.markdown("**Architecture:**")
-        st.table({
-            "Component": ["FNO (fields)", "DeepONet (scalars)"],
-            "Output": ["vm, ξ, σ_xx on 6200 elements",
-                       "V_cell, capacity"],
-            "R² (test)": ["0.944 / 0.965 / 0.935", "0.9999 / 0.9998"],
-            "Parameters": ["1,209,347", "50,306"],
-        })
-        st.markdown("**Training:**")
-        st.markdown(
-            "- FNO: 1000 epochs, AdamW + CosineDecay, lr=3e-4\n"
-            "- DeepONet: 2000 epochs, lr=1e-3\n"
-            "- Data: 600 FEM points (10P × 6Cr × 10τ)\n"
-            "- UQ: MC Dropout p=0.15")
-        st.markdown("**Materials (Table 1 — Taghikhani & Kee 2025):**")
-        st.table({
-            "Material": ["NMC (particle)", "LPSC (matrix)", "Interface"],
-            "E (GPa)": [175.3, 22.1, "—"],
-            "ν": [0.282, 0.37, "—"],
-            "Gc (J/m²)": [2.5, 2.785, 1.0],
-        })
-
-with col_lim:
-    with st.expander("⚠️ Documented Limitations", expanded=False):
-        st.markdown("""
-**[CHOICE] Geometry:**
-5 circular NMC particles in 40×40µm domain —
-NOT the SEM microstructure from Bielefeld et al. 2022.
-
-**[CHOICE] Electrochemistry:**
-Galvanostatic (current-controlled) formulation —
-NOT full Butler-Volmer. BV stress coupling term
-(β_ij σ_ij / F ≈ 0.065V at 40MPa) is omitted.
-
-**[CHOICE] Phase-field:**
-ROM irreversibility H = ψ₀⁺ · tanh(8τ) —
-NOT the full history variable from AT2.
-
-**[CHOICE] Scale:**
-~25K DOF vs paper's 3.5M DOF COMSOL model.
-
-**Consequence:**
-P has weak effect on V_cell/cap in this model.
-Fields are physics-based interpolations, not
-exact reproductions of paper figures.
-        """)
-        st.markdown("""
-**Reference:**
-Taghikhani & Kee, *J. Mech. Phys. Solids* 198 (2025) 106060
-        """)
-
-with st.expander("⚛️ Physics Equations", expanded=False):
-    st.markdown(r"""
-**Mechanical equilibrium:**
-$$\nabla \cdot \boldsymbol{\sigma} = 0, \quad \boldsymbol{\sigma} = \mathbb{C} : (\boldsymbol{\varepsilon} - \boldsymbol{\varepsilon}^{eig})$$
-
-**Chemical eigenstrain:**
-$$\varepsilon^{eig} = \beta_{eff} \Delta x \cdot \mathbf{I}, \quad \beta_{eff} = \beta_{iso} \cdot c_{Li,max} = 0.008124$$
-
-**AT2 Phase-field (ROM):**
-$$\left[\frac{3G_c}{4\ell_0} + 2H\right]\xi - \frac{3G_c \ell_0}{8}\nabla^2\xi = 2H$$
-
-**Irreversibility (ROM):**
-$$H = \psi_0^+ \cdot \tanh(8\tau)$$
-
-**Tensile energy:**
-$$\psi_0^+ = \frac{1}{2}K\langle I_1 \rangle_+^2 + 2\mu J_2$$
-    """)
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("---")
