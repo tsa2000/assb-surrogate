@@ -23,6 +23,29 @@ physics can be distilled into a lightweight surrogate suitable for real-time
 use — battery management system (BMS) firmware, onboard vehicle compute, or
 edge nodes — without commercial FEM software.
 
+### What this demonstrates
+
+- **Feasibility** — a coupled three-physics FEM model (electrochemistry +
+  mechanics + fracture) that takes hours per case can be distilled into a
+  surrogate that runs in under a second, from only 600 training samples.
+- **Physical fidelity, not curve-fitting** — seven independent physics checks
+  (monotonicity, voltage bounds, fracture location, C-rate ordering, etc.) all
+  pass, and the model's failure modes trace back to specific, named modeling
+  choices rather than unexplained error (§5).
+- **Deployability** — under 5 MB and sub-second inference is small enough for
+  BMS firmware or vehicle-onboard compute, closing part of the gap between
+  a research-grade FEM model and a real-time control-loop-ready component.
+- **Traceable limitations** — every gap between this surrogate and the
+  reference paper is tied to a specific, documented modeling or tooling
+  choice, verified rather than assumed (see §5, including the pressure-
+  sensitivity investigation).
+
+Note on methodology: FNO and DeepONet are established neural-operator
+architectures (Anandkumar et al. 2020; Lu et al. 2019), not introduced here.
+What this repository contributes is their careful, verified application to
+this specific coupled-physics problem — including an explicit accounting of
+where and why the surrogate departs from the full-fidelity reference.
+
 ## 2. Architecture
 
 | Component | Details |
