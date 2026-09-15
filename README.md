@@ -68,7 +68,7 @@ physical consequence.
 | Choice | Consequence | What resolves it |
 |---|---|---|
 | Galvanostatic instead of Butler–Volmer | 0.55 V voltage offset; pressure does not couple into V_cell/capacity, since the stress term in the overpotential equation (η = Φ_ed − Φ_el − E^eq − β·σ_ij/F) is absent | Calibrated i₀ from EIS + coupled nonlinear solver |
-| AT-2 phase-field instead of AT-1 | No nucleation threshold → damage grows smoothly instead of being gated. This is the primary reason pressure's effect on ξ_max and vm_max is weak (~1–1.5% over the full 0–45 MPa range) instead of the near-total suppression seen in the paper's Fig. 9 vs. Fig. 10, where pressure works mainly by preventing crack *nucleation* in the first place | Constrained minimization (COMSOL) or FEniCSx + PETSc |
+| AT-2 phase-field instead of AT-1 | AT-1 requires solving a constrained minimization problem (irreversibility + threshold constraints) at every load step — infeasible with the available scikit-fem + JAX toolchain on a single T4 GPU, which is why AT-2's unconstrained formulation was used instead. Consequence: no nucleation threshold → damage grows smoothly instead of being gated. This is the primary reason pressure's effect on ξ_max and vm_max is weak (~1–1.5% over the full 0–45 MPa range) instead of the near-total suppression seen in the paper's Fig. 9 vs. Fig. 10, where pressure works mainly by preventing crack *nucleation* in the first place | Constrained minimization solver (COMSOL) or FEniCSx + PETSc on HPC |
 | tanh ROM instead of history variable | Valid for a single charge event; cannot accumulate damage across cycles | Segregated solver tracking max_t(ψ₀⁺) per element |
 | 5 circular particles instead of SEM geometry | Correct physics, no particle-size statistics or morphology | SEM image + HPC mesh generation |
 | scikit-fem + JAX instead of COMSOL/FEniCSx | ~25K DOF vs ~3.5M DOF; coarser field contours | FEniCSx + PETSc + libCEED on HPC |
@@ -80,7 +80,11 @@ MPa) and a direct check of the trained model's input normalization bounds
 scaling and the training pipeline were confirmed correct — the weak sensitivity
 is a property of the AT-2 formulation itself (and its absence of a nucleation
 threshold), inherited faithfully from the FEM training data, not an
-implementation defect.
+implementation defect. AT-2 was chosen specifically because AT-1's constrained
+minimization at every load step was not solvable with the available
+scikit-fem + JAX toolchain on a single T4 GPU — the same category of
+toolchain constraint documented for mesh resolution and geometry elsewhere in
+this table.
 
 ## 6. Deployment profile
 
