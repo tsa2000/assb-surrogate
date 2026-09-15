@@ -145,8 +145,6 @@ field_min = np.array(fno_b["normalization"]["field_min"])
 field_max = np.array(fno_b["normalization"]["field_max"])
 scal_min  = np.array(don_b["normalization"]["scal_min"])
 scal_max  = np.array(don_b["normalization"]["scal_max"])
-st.write("in_min:", in_min)
-st.write("in_max:", in_max)
 x_mesh_np = fno_b["mesh"]["x_mesh_np"]
 n_elem    = fno_b["mesh"]["n_elem"]
 x_mesh_base = jnp.array(x_mesh_np)[None, :, :]
